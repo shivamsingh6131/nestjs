@@ -2,10 +2,19 @@ import { Controller, Get, Post, Req, Res, Param, Query, ValidationPipe } from '@
 import { Body, UsePipes } from '@nestjs/common/decorators';
 import { ParseBoolPipe, ParseIntPipe } from '@nestjs/common/pipes';
 import { Request, Response } from "express";
-import { CreateUserDto } from 'src/users/dtos/CreateUsers.dto';
+import { CreateUserDto, CreatUserWithIdDto } from 'src/users/dtos/CreateUsers.dto';
+import { UsersService } from 'src/users/services/users/users.service';
 
 @Controller('users')
 export class UsersController {
+
+    //injecting userService (business logic - fetching data etc.)
+    constructor(private userService : UsersService) {}
+
+    @Get("getUserService")
+    getUserService(){
+        return this.userService.fetchUser();
+    }
 
     //Query => to validate the query (here validating if it is boolean)
     @Get()
@@ -42,6 +51,13 @@ export class UsersController {
         console.log("userPayload" , userPayload);
         return {}
     }
+
+    @Post('createUserWithService')
+    @UsePipes(new ValidationPipe)
+    createUserWithService(@Body() userPayload : CreatUserWithIdDto) {
+        return this.userService.createUser(userPayload);
+        
+    }
     //ParseIntPipe => is used to convert string to number
     //TO validate the parameters in post request.
     
@@ -51,5 +67,11 @@ export class UsersController {
         console.log({id , postId})
         return {id , postId}
 
+    }
+
+    @Get(':id')
+    getServiceUserById(@Param('id' , ParseIntPipe) id : number){
+        console.log("getServiceUserById being called")
+        return this.userService.getUserById(id);
     }
 }
